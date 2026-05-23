@@ -1,0 +1,40 @@
+model:
+  num_vars: 5                # number of variables D
+  hidden_dim: 128            # latent dimension H (TTM r2 d_model=192 → proj → 128)
+  context_len: 512           # must match TTM r2 pretraining context length
+  target_len: 512            # same as context_len; symmetric JEPA encoder structure
+  ema_decay: 0.999           # momentum coefficient for target encoder EMA update
+  ttm_model_path: "ibm-granite/granite-timeseries-ttm-r2"
+  ttm_revision: "512-96-ft-r2.1"   # 512-step context, pred=96, fine-tuned; 103/103 weights load
+  freeze_backbone: true
+  unfreeze_last_n_layers: 0  # r2 has 2 layers; start frozen, unfreeze cautiously
+  num_target_patches: 3      # number of target patches independently sampled per forward pass
+
+causal:
+  tau_start: 1.0             # initial temperature for A = sigmoid(Theta / tau)
+  tau_end: 0.1               # final temperature after annealing
+
+loss:
+  lambda_jepa: 1000.0        # L_JEPA weight; primary loss — directly controls forecast quality
+  lambda_adv: 0.1            # L_ADV target weight; actual value linearly ramped from 0
+  lambda_dag: 0.1            # L_DAG weight (acyclicity constraint)
+  lambda_sparse: 0.01        # L_sparse weight (L1 on A); enabled after warmup + sparse_warmup_epochs
+  margin: 0.3                # fixed offset in L_ADV log-ratio; contributes zero gradient (Python constant)
+  adv_ramp_epochs: 10        # epochs to linearly ramp lambda_adv from 0 to target
+  sparse_warmup_epochs: 5    # delay L_sparse until epoch 10 (after L_ADV establishes causal structure)
+
+training:
+  num_epochs: 20
+  warmup_epochs: 5           # train P_self only; A frozen; no L_ADV
+  batch_size: 32
+  lr: 1.0e-4
+  backbone_lr: 1.0e-4        # separate lr for unfrozen backbone layers
+  seed: 42
+  mask_ratio: 0.3            # fraction of patches zeroed in x_context (context mask)
+
+data:
+  dataset_path: "data/scm_d5_n30_t1500_dag42.npz"   # pre-generated multi-series dataset
+  num_samples: 2000          # only used for --dataset scm (legacy single-series)
+  lag: 1                     # VAR model order (only used for --dataset synthetic)
+  max_parents: 2             # SCM: max parent nodes per variable
+  noise_std: 0.1             # SCM: additive Gaussian noise std

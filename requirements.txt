@@ -1,0 +1,14 @@
+torch>=2.1.0
+transformers>=4.40.0
+safetensors
+huggingface_hub
+numpy
+pandas
+pyyaml
+einops
+scipy
+matplotlib
+networkx
+muon
+# IBM TTM: pip install "tsfm_public[notebooks]"
+# or from source: pip install git+https://github.com/ibm-granite/granite-tsfm.git

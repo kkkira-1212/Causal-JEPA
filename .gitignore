@@ -1,0 +1,23 @@
+# model weights
+*.pt
+
+# datasets
+data/*.npz
+
+# python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# logs and outputs
+logs/
+
+# vendor: only CauKer.py is needed; exclude bundled model repos
+vendor/CauKer/Models/
+vendor/CauKer/CauKer.ipynb
+
+# editor / OS / IDE
+.DS_Store
+.claude/
+*.egg-info/
+.env
